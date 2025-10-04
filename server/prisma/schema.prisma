@@ -1,0 +1,161 @@
+// This is your Prisma schema file for LifeQuest
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+generator go {
+  provider = "go run github.com/steebchen/prisma-client-go"
+  output   = "../internal/db"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+  level     Int      @default(1)
+  xp        Int      @default(0)
+  totalXp   Int      @default(0) @map("total_xp")
+  streak    Int      @default(0)
+  avatar    String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  folders          Folder[]
+  projects         Project[]
+  tasks            Task[]
+  pomodoroSessions PomodoroSession[]
+  sprints          Sprint[]
+
+  @@map("users")
+}
+
+model Folder {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  name         String
+  description  String?
+  color        String   @default("#3b82f6")
+  icon         String   @default("📁")
+  projectCount Int      @default(0) @map("project_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects Project[]
+
+  @@map("folders")
+}
+
+model Project {
+  id                 String    @id @default(cuid())
+  userId             String    @map("user_id")
+  folderId           String    @map("folder_id")
+  name               String
+  description        String?
+  status             String    @default("active") // active, completed, on-hold, cancelled
+  priority           String    @default("medium") // low, medium, high
+  dueDate            DateTime? @map("due_date")
+  taskCount          Int       @default(0) @map("task_count")
+  completedTaskCount Int       @default(0) @map("completed_task_count")
+  xpEarned           Int       @default(0) @map("xp_earned")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder           Folder            @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  tasks            Task[]
+  pomodoroSessions PomodoroSession[]
+
+  @@map("projects")
+}
+
+model Task {
+  id                 String    @id @default(cuid())
+  userId             String    @map("user_id")
+  projectId          String    @map("project_id")
+  title              String
+  description        String?
+  status             String    @default("todo") // todo, in-progress, completed
+  priority           String    @default("medium") // low, medium, high
+  xpValue            Int       @default(25) @map("xp_value")
+  estimatedPomodoros Int       @default(1) @map("estimated_pomodoros")
+  actualPomodoros    Int       @default(0) @map("actual_pomodoros")
+  dueDate            DateTime? @map("due_date")
+  completedAt        DateTime? @map("completed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  pomodoroSessions PomodoroSession[]
+  sprintTasks      SprintTask[]
+
+  @@map("tasks")
+}
+
+model PomodoroSession {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  taskId    String?   @map("task_id")
+  projectId String?   @map("project_id")
+  duration  Int // in minutes
+  type      String // work, short-break, long-break
+  status    String // active, paused, completed, cancelled
+  startTime DateTime  @default(now()) @map("start_time")
+  endTime   DateTime? @map("end_time")
+  xpEarned  Int       @default(0) @map("xp_earned")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task    Task?    @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@map("pomodoro_sessions")
+}
+
+model Sprint {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  name        String
+  description String?
+  startDate   DateTime  @map("start_date")
+  endDate     DateTime  @map("end_date")
+  status      String    @default("planned") // planned, active, completed
+  goalXp      Int       @default(0) @map("goal_xp")
+  earnedXp    Int       @default(0) @map("earned_xp")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sprintTasks SprintTask[]
+
+  @@map("sprints")
+}
+
+model SprintTask {
+  id       String @id @default(cuid())
+  sprintId String @map("sprint_id")
+  taskId   String @map("task_id")
+
+  // Relations
+  sprint Sprint @relation(fields: [sprintId], references: [id], onDelete: Cascade)
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([sprintId, taskId])
+  @@map("sprint_tasks")
+}
