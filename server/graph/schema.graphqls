@@ -1,0 +1,652 @@
+# LifeQuest V2 GraphQL Schema
+
+scalar Time
+scalar UUID
+
+type User {
+  id: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  avatarUrl: String
+  level: Int!
+  totalXp: Int!
+  currentStreak: Int!
+  maxStreak: Int!
+  createdAt: Time!
+  updatedAt: Time!
+  
+  # V2 Features
+  skillTrees: [SkillTree!]!
+  badges: [Badge!]!
+  achievements: [Achievement!]!
+  preferences: UserPreferences!
+  analytics: UserAnalytics!
+}
+
+type UserPreferences {
+  id: ID!
+  userId: ID!
+  theme: String!
+  notifications: NotificationSettings!
+  pomodoroSettings: PomodoroSettings!
+  timezone: String!
+}
+
+type NotificationSettings {
+  email: Boolean!
+  push: Boolean!
+  sessionReminders: Boolean!
+  dailyGoals: Boolean!
+  weeklyReports: Boolean!
+}
+
+type PomodoroSettings {
+  workDuration: Int!
+  shortBreakDuration: Int!
+  longBreakDuration: Int!
+  sessionsUntilLongBreak: Int!
+  autoStartBreaks: Boolean!
+  autoStartWork: Boolean!
+}
+
+# Skill Trees System
+type SkillTree {
+  id: ID!
+  name: String!
+  category: SkillCategory!
+  totalXp: Int!
+  level: Int!
+  skills: [Skill!]!
+  unlockedAt: Time
+}
+
+enum SkillCategory {
+  PRODUCTIVITY
+  HEALTH
+  LEARNING
+  CREATIVITY
+  SOCIAL
+  FINANCE
+  PERSONAL
+}
+
+type Skill {
+  id: ID!
+  name: String!
+  description: String!
+  icon: String!
+  requiredXp: Int!
+  unlocked: Boolean!
+  level: Int!
+  maxLevel: Int!
+  category: SkillCategory!
+}
+
+# Badges & Achievements
+type Badge {
+  id: ID!
+  name: String!
+  description: String!
+  icon: String!
+  rarity: BadgeRarity!
+  unlockedAt: Time!
+  criteria: String!
+}
+
+enum BadgeRarity {
+  COMMON
+  RARE
+  EPIC
+  LEGENDARY
+}
+
+type Achievement {
+  id: ID!
+  name: String!
+  description: String!
+  icon: String!
+  progress: Int!
+  maxProgress: Int!
+  completed: Boolean!
+  xpReward: Int!
+  badgeReward: Badge
+  unlockedAt: Time
+}
+
+# Analytics
+type UserAnalytics {
+  id: ID!
+  userId: ID!
+  dailyStats: [DailyStat!]!
+  weeklyStats: [WeeklyStat!]!
+  monthlyStats: [MonthlyStat!]!
+  productivity: ProductivityAnalytics!
+  focus: FocusAnalytics!
+}
+
+type DailyStat {
+  date: Time!
+  tasksCompleted: Int!
+  xpEarned: Int!
+  pomodoroSessions: Int!
+  focusTime: Int! # in minutes
+  projectsWorkedOn: Int!
+}
+
+type WeeklyStat {
+  weekStart: Time!
+  tasksCompleted: Int!
+  xpEarned: Int!
+  pomodoroSessions: Int!
+  focusTime: Int!
+  averageProductivity: Float!
+}
+
+type MonthlyStat {
+  month: Int!
+  year: Int!
+  tasksCompleted: Int!
+  xpEarned: Int!
+  pomodoroSessions: Int!
+  focusTime: Int!
+  goalsAchieved: Int!
+}
+
+type ProductivityAnalytics {
+  averageTasksPerDay: Float!
+  peakProductivityHour: Int!
+  mostProductiveDay: String!
+  taskCompletionRate: Float!
+  averageTaskDuration: Float!
+}
+
+type FocusAnalytics {
+  averageSessionDuration: Float!
+  totalFocusTime: Int!
+  focusStreakDays: Int!
+  preferredFocusTime: String!
+  focusEfficiency: Float!
+}
+
+# Enhanced Folders and Projects
+type Folder {
+  id: ID!
+  name: String!
+  description: String
+  color: String
+  icon: String
+  isArchived: Boolean!
+  userId: ID!
+  parentId: ID
+  children: [Folder!]!
+  projects: [Project!]!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type Project {
+  id: ID!
+  name: String!
+  description: String
+  color: String
+  icon: String
+  status: ProjectStatus!
+  priority: Priority!
+  startDate: Time
+  endDate: Time
+  isArchived: Boolean!
+  userId: ID!
+  folderId: ID
+  folder: Folder
+  tasks: [Task!]!
+  sprints: [Sprint!]!
+  collaborators: [ProjectCollaborator!]!
+  analytics: ProjectAnalytics!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+type ProjectCollaborator {
+  id: ID!
+  projectId: ID!
+  userId: ID!
+  user: User!
+  role: CollaboratorRole!
+  invitedAt: Time!
+  joinedAt: Time
+}
+
+enum CollaboratorRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+type ProjectAnalytics {
+  totalTasks: Int!
+  completedTasks: Int!
+  overdueTasks: Int!
+  averageTaskDuration: Float!
+  completionRate: Float!
+  timeSpent: Int!
+  xpEarned: Int!
+}
+
+# Enhanced Tasks
+type Task {
+  id: ID!
+  title: String!
+  description: String
+  status: TaskStatus!
+  priority: Priority!
+  xpValue: Int!
+  estimatedDuration: Int # in minutes
+  actualDuration: Int
+  tags: [String!]!
+  dueDate: Time
+  completedAt: Time
+  isArchived: Boolean!
+  userId: ID!
+  projectId: ID
+  project: Project
+  sprintId: ID
+  sprint: Sprint
+  assigneeId: ID
+  assignee: User
+  pomodoroSessions: [PomodoroSession!]!
+  subtasks: [Subtask!]!
+  comments: [TaskComment!]!
+  attachments: [TaskAttachment!]!
+  dependencies: [Task!]!
+  dependents: [Task!]!
+  skillCategory: SkillCategory
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+type Subtask {
+  id: ID!
+  title: String!
+  completed: Boolean!
+  taskId: ID!
+  createdAt: Time!
+}
+
+type TaskComment {
+  id: ID!
+  content: String!
+  taskId: ID!
+  userId: ID!
+  user: User!
+  createdAt: Time!
+}
+
+type TaskAttachment {
+  id: ID!
+  filename: String!
+  url: String!
+  size: Int!
+  mimeType: String!
+  taskId: ID!
+  uploadedBy: ID!
+  createdAt: Time!
+}
+
+# Sprints System
+type Sprint {
+  id: ID!
+  name: String!
+  description: String
+  goal: String
+  status: SprintStatus!
+  startDate: Time!
+  endDate: Time!
+  velocity: Int!
+  userId: ID!
+  projectId: ID
+  project: Project
+  tasks: [SprintTask!]!
+  analytics: SprintAnalytics!
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+enum SprintStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+type SprintTask {
+  id: ID!
+  sprintId: ID!
+  taskId: ID!
+  task: Task!
+  storyPoints: Int!
+  assignedAt: Time!
+}
+
+type SprintAnalytics {
+  plannedStoryPoints: Int!
+  completedStoryPoints: Int!
+  burndownData: [BurndownPoint!]!
+  velocityTrend: Float!
+  completionRate: Float!
+}
+
+type BurndownPoint {
+  date: Time!
+  remainingPoints: Int!
+  idealRemaining: Int!
+}
+
+# Enhanced Pomodoro Sessions
+type PomodoroSession {
+  id: ID!
+  duration: Int!
+  completed: Boolean!
+  startTime: Time!
+  endTime: Time
+  breakDuration: Int
+  userId: ID!
+  taskId: ID
+  task: Task
+  sessionType: SessionType!
+  interruptions: Int!
+  notes: String
+  focusScore: Int # 1-10 rating
+  createdAt: Time!
+}
+
+enum SessionType {
+  WORK
+  SHORT_BREAK
+  LONG_BREAK
+}
+
+# Real-time features
+type Notification {
+  id: ID!
+  title: String!
+  message: String!
+  type: NotificationType!
+  read: Boolean!
+  userId: ID!
+  data: String # JSON data
+  createdAt: Time!
+}
+
+enum NotificationType {
+  TASK_DUE
+  SESSION_REMINDER
+  ACHIEVEMENT_UNLOCKED
+  BADGE_EARNED
+  SPRINT_COMPLETED
+  COLLABORATION_INVITE
+  SYSTEM_UPDATE
+}
+
+# Input Types
+input CreateUserInput {
+  email: String!
+  firstName: String
+  lastName: String
+  avatarUrl: String
+}
+
+input UpdateUserInput {
+  firstName: String
+  lastName: String
+  avatarUrl: String
+}
+
+input UpdateUserPreferencesInput {
+  theme: String
+  notifications: NotificationSettingsInput
+  pomodoroSettings: PomodoroSettingsInput
+  timezone: String
+}
+
+input NotificationSettingsInput {
+  email: Boolean
+  push: Boolean
+  sessionReminders: Boolean
+  dailyGoals: Boolean
+  weeklyReports: Boolean
+}
+
+input PomodoroSettingsInput {
+  workDuration: Int
+  shortBreakDuration: Int
+  longBreakDuration: Int
+  sessionsUntilLongBreak: Int
+  autoStartBreaks: Boolean
+  autoStartWork: Boolean
+}
+
+input CreateFolderInput {
+  name: String!
+  description: String
+  color: String
+  icon: String
+  parentId: ID
+}
+
+input UpdateFolderInput {
+  name: String
+  description: String
+  color: String
+  icon: String
+  isArchived: Boolean
+}
+
+input CreateProjectInput {
+  name: String!
+  description: String
+  color: String
+  icon: String
+  priority: Priority!
+  startDate: Time
+  endDate: Time
+  folderId: ID
+}
+
+input UpdateProjectInput {
+  name: String
+  description: String
+  color: String
+  icon: String
+  status: ProjectStatus
+  priority: Priority
+  startDate: Time
+  endDate: Time
+  isArchived: Boolean
+}
+
+input CreateTaskInput {
+  title: String!
+  description: String
+  priority: Priority!
+  xpValue: Int!
+  estimatedDuration: Int
+  tags: [String!]
+  dueDate: Time
+  projectId: ID
+  skillCategory: SkillCategory
+}
+
+input UpdateTaskInput {
+  title: String
+  description: String
+  status: TaskStatus
+  priority: Priority
+  xpValue: Int
+  estimatedDuration: Int
+  tags: [String!]
+  dueDate: Time
+  skillCategory: SkillCategory
+}
+
+input CreateSprintInput {
+  name: String!
+  description: String
+  goal: String
+  startDate: Time!
+  endDate: Time!
+  projectId: ID
+}
+
+input UpdateSprintInput {
+  name: String
+  description: String
+  goal: String
+  status: SprintStatus
+  startDate: Time
+  endDate: Time
+}
+
+input CreatePomodoroSessionInput {
+  duration: Int!
+  taskId: ID
+  sessionType: SessionType!
+}
+
+input UpdatePomodoroSessionInput {
+  completed: Boolean
+  endTime: Time
+  breakDuration: Int
+  interruptions: Int
+  notes: String
+  focusScore: Int
+}
+
+# Queries
+type Query {
+  # User queries
+  me: User!
+  user(id: ID!): User
+  
+  # Folder queries
+  folders: [Folder!]!
+  folder(id: ID!): Folder
+  
+  # Project queries
+  projects: [Project!]!
+  project(id: ID!): Project
+  
+  # Task queries
+  tasks(status: TaskStatus, projectId: ID, sprintId: ID): [Task!]!
+  task(id: ID!): Task
+  tasksByDueDate(date: Time!): [Task!]!
+  overdueTasks: [Task!]!
+  
+  # Sprint queries
+  sprints(status: SprintStatus): [Sprint!]!
+  sprint(id: ID!): Sprint
+  activeSprints: [Sprint!]!
+  
+  # Pomodoro queries
+  pomodoroSessions(date: Time): [PomodoroSession!]!
+  pomodoroSession(id: ID!): PomodoroSession
+  todaysSessions: [PomodoroSession!]!
+  
+  # Analytics queries
+  userAnalytics(startDate: Time!, endDate: Time!): UserAnalytics!
+  projectAnalytics(projectId: ID!): ProjectAnalytics!
+  sprintAnalytics(sprintId: ID!): SprintAnalytics!
+  
+  # Achievement queries
+  achievements: [Achievement!]!
+  badges: [Badge!]!
+  skillTrees: [SkillTree!]!
+  
+  # Notification queries
+  notifications(unreadOnly: Boolean): [Notification!]!
+  unreadNotificationCount: Int!
+}
+
+# Mutations
+type Mutation {
+  # User mutations
+  createUser(input: CreateUserInput!): User!
+  updateUser(input: UpdateUserInput!): User!
+  updateUserPreferences(input: UpdateUserPreferencesInput!): UserPreferences!
+  
+  # Folder mutations
+  createFolder(input: CreateFolderInput!): Folder!
+  updateFolder(id: ID!, input: UpdateFolderInput!): Folder!
+  deleteFolder(id: ID!): Boolean!
+  
+  # Project mutations
+  createProject(input: CreateProjectInput!): Project!
+  updateProject(id: ID!, input: UpdateProjectInput!): Project!
+  deleteProject(id: ID!): Boolean!
+  
+  # Task mutations
+  createTask(input: CreateTaskInput!): Task!
+  updateTask(id: ID!, input: UpdateTaskInput!): Task!
+  deleteTask(id: ID!): Boolean!
+  toggleTaskStatus(id: ID!): Task!
+  
+  # Sprint mutations
+  createSprint(input: CreateSprintInput!): Sprint!
+  updateSprint(id: ID!, input: UpdateSprintInput!): Sprint!
+  deleteSprint(id: ID!): Boolean!
+  addTaskToSprint(sprintId: ID!, taskId: ID!, storyPoints: Int!): SprintTask!
+  removeTaskFromSprint(sprintId: ID!, taskId: ID!): Boolean!
+  
+  # Pomodoro mutations
+  startPomodoroSession(input: CreatePomodoroSessionInput!): PomodoroSession!
+  updatePomodoroSession(id: ID!, input: UpdatePomodoroSessionInput!): PomodoroSession!
+  completePomodoroSession(id: ID!): PomodoroSession!
+  
+  # Notification mutations
+  markNotificationAsRead(id: ID!): Notification!
+  markAllNotificationsAsRead: Boolean!
+  
+  # Collaboration mutations
+  inviteCollaborator(projectId: ID!, email: String!, role: CollaboratorRole!): ProjectCollaborator!
+  updateCollaboratorRole(collaboratorId: ID!, role: CollaboratorRole!): ProjectCollaborator!
+  removeCollaborator(collaboratorId: ID!): Boolean!
+}
+
+# Subscriptions for real-time features
+type Subscription {
+  # Real-time notifications
+  notificationAdded: Notification!
+  
+  # Real-time session updates
+  pomodoroSessionUpdated(userId: ID!): PomodoroSession!
+  
+  # Real-time task updates (for collaboration)
+  taskUpdated(projectId: ID!): Task!
+  
+  # Real-time sprint updates
+  sprintUpdated(sprintId: ID!): Sprint!
+}

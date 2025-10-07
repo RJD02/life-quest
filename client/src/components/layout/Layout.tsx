@@ -16,7 +16,7 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" style={{ backgroundColor: 'var(--color-background)' }}>
       <Sidebar isCollapsed={isSidebarCollapsed} />
       
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -27,6 +27,7 @@ export const Layout: FC<LayoutProps> = ({ children }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.1 }}
           className="flex-1 overflow-auto p-6"
+          style={{ backgroundColor: 'var(--color-background)' }}
         >
           {children}
         </motion.main>

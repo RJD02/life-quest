@@ -2,16 +2,17 @@ import type { FC } from 'react'
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
-  PlayIcon,
-  ClockIcon,
-  TrophyIcon,
-  ChartBarIcon,
-  FolderIcon,
-  SparklesIcon,
-  ArrowRightIcon,
-  CheckCircleIcon,
+    PlayIcon,
+    ClockIcon,
+    TrophyIcon,
+    ChartBarIcon,
+    FolderIcon,
+    SparklesIcon,
+    ArrowRightIcon,
+    CheckCircleIcon,
 } from '@heroicons/react/24/outline'
-import { SignUpButton, SignInButton } from '@clerk/clerk-react'
+// Note: This LandingPage is no longer used with simple auth
+// Removed Clerk imports
 
 interface FeatureProps {
   icon: any
@@ -113,16 +114,12 @@ export const LandingPage: FC = () => {
               transition={{ duration: 0.6 }}
               className="flex items-center space-x-4"
             >
-              <SignInButton mode="modal">
-                <button className="text-gray-600 hover:text-gray-900 font-medium">
-                  Sign In
-                </button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <button className="btn-primary">
-                  Get Started
-                </button>
-              </SignUpButton>
+                            <button className="btn-primary">
+                Sign In
+              </button>
+              <button className="btn-outline">
+                Get Started Free
+              </button>
             </motion.div>
           </div>
         </div>
@@ -158,12 +155,10 @@ export const LandingPage: FC = () => {
               transition={{ duration: 0.8, delay: 0.4 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
-              <SignUpButton mode="modal">
-                <button className="btn-primary text-lg px-8 py-3 flex items-center space-x-2">
-                  <span>Start Your Quest</span>
-                  <ArrowRightIcon className="w-5 h-5" />
-                </button>
-              </SignUpButton>
+              <button className="btn-primary text-lg px-8 py-3 flex items-center space-x-2">
+                <span>Start Your Quest</span>
+                <ArrowRightIcon className="w-5 h-5" />
+              </button>
               <button className="btn-secondary text-lg px-8 py-3">
                 Watch Demo
               </button>
@@ -301,12 +296,10 @@ export const LandingPage: FC = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <SignUpButton mode="modal">
-                <button className="bg-white text-blue-600 hover:bg-gray-50 font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2">
-                  <span>Start Your Free Journey</span>
-                  <ArrowRightIcon className="w-5 h-5" />
-                </button>
-              </SignUpButton>
+              <button className="bg-white text-blue-600 hover:bg-gray-50 font-semibold py-3 px-8 rounded-lg transition-colors duration-200 flex items-center space-x-2">
+                <span>Start Your Free Journey</span>
+                <ArrowRightIcon className="w-5 h-5" />
+              </button>
             </div>
 
             <div className="mt-8 flex items-center justify-center space-x-6 text-blue-100">

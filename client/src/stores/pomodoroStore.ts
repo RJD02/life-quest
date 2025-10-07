@@ -5,6 +5,7 @@ export interface PomodoroSession {
   id: string
   taskId?: string
   projectId?: string
+  task?: string
   duration: number // in minutes
   type: 'work' | 'short-break' | 'long-break'
   status: 'active' | 'paused' | 'completed' | 'cancelled'
@@ -45,7 +46,13 @@ interface PomodoroState {
   resumeSession: () => void
   completeSession: () => void
   cancelSession: () => void
+  stopSession: () => void
+  skipSession: () => void
   setTimeRemaining: (time: number) => void
+  
+  // Computed properties
+  sessionCount: number
+  completedSessions: PomodoroSession[]
   
   // Settings actions
   updateSettings: (settings: Partial<{
@@ -187,6 +194,25 @@ export const usePomodoroStore = create<PomodoroState>()(
       },
       
       setTimeRemaining: (time) => set({ timeRemaining: time }),
+
+      stopSession: () => {
+        // Alias for cancelSession
+        get().cancelSession()
+      },
+
+      skipSession: () => {
+        // Complete the current session immediately
+        get().completeSession()
+      },
+
+      // Computed properties
+      get sessionCount() {
+        return get().todaysSessions.filter(s => s.type === 'work').length
+      },
+
+      get completedSessions() {
+        return get().sessions.filter(s => s.status === 'completed')
+      },
       
       updateSettings: (settings) => set(settings),
       
